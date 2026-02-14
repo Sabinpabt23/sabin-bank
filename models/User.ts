@@ -7,6 +7,11 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Full name is required'],
   },
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+  },
   phoneNumber: {
     type: String,
     required: [true, 'Phone number is required'],
@@ -47,11 +52,26 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Password is required'],
   },
+  status: {
+    type: String,
+    enum: ['pending', 'active', 'rejected'],
+    default: 'pending',
+  },
+  requestedCard: {
+    type: Boolean,
+    default: false,
+  },
+  cardType: {
+    type: String,
+    enum: ['VISA', 'MASTERCARD', 'AMEX'],
+    required: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
+
 
 // Check if model exists already (for Next.js hot reload)
 const User = mongoose.models.User || mongoose.model('User', UserSchema);

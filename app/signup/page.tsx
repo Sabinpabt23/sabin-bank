@@ -14,6 +14,7 @@ export default function SignupPage() {
   
   const [formData, setFormData] = useState({
     fullName: '',
+    email: '', // NEW
     phoneNumber: '',
     location: '',
     gender: 'male',
@@ -22,6 +23,8 @@ export default function SignupPage() {
     idNumber: '',
     password: '',
     confirmPassword: '',
+    requestCard: 'no', // NEW: 'yes' or 'no'
+    cardType: '', // NEW: VISA, MASTERCARD, AMEX
   });
 
   const [passwordValidations, setPasswordValidations] = useState({
@@ -39,6 +42,15 @@ export default function SignupPage() {
     if (name === 'password') {
       validatePassword(value);
     }
+  };
+
+  const handleCardRequestChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      requestCard: e.target.value,
+      // Reset card type if they select 'no'
+      cardType: e.target.value === 'no' ? '' : prev.cardType 
+    }));
   };
 
   const validatePassword = (password: string) => {
@@ -73,6 +85,12 @@ export default function SignupPage() {
       return;
     }
 
+    // Validate card type if they requested one
+    if (formData.requestCard === 'yes' && !formData.cardType) {
+      setError('Please select a card type');
+      return;
+    }
+
     // Validate terms
     if (!termsAccepted) {
       setError('You must accept the terms and conditions');
@@ -83,12 +101,12 @@ export default function SignupPage() {
     setError('');
 
     try {
-      // For now, we'll send data without the file (we'll add file upload later)
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: formData.fullName,
+          email: formData.email, // NEW
           phoneNumber: formData.phoneNumber,
           location: formData.location,
           gender: formData.gender,
@@ -96,13 +114,15 @@ export default function SignupPage() {
           idType: formData.idType,
           idNumber: formData.idNumber,
           password: formData.password,
+          requestedCard: formData.requestCard, // NEW
+          cardType: formData.cardType, // NEW
         }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        alert(`✅ Account created successfully!\n\nYour Account Number: ${data.user.accountNumber}\n\nPlease save this number for login.`);
+        alert(`✅ ${data.message}\n\nWe'll send you an email once your account is verified.`);
         router.push('/login');
       } else {
         setError(data.error || 'Something went wrong');
@@ -142,6 +162,22 @@ export default function SignupPage() {
                 onChange={handleChange}
                 required
                 placeholder="Enter your full name"
+                className={styles.input}
+              />
+            </div>
+
+            {/* Email - NEW */}
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
+                Email Address <span>*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                placeholder="you@example.com"
                 className={styles.input}
               />
             </div>
@@ -262,65 +298,113 @@ export default function SignupPage() {
               )}
             </div>
 
-            {/* Password */}
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                Password <span>*</span>
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                placeholder="Create a strong password"
-                className={styles.input}
-              />
-            </div>
-
-            {/* Confirm Password */}
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                Confirm Password <span>*</span>
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                placeholder="Re-enter your password"
-                className={`${styles.input} ${
-                  formData.confirmPassword && formData.password !== formData.confirmPassword
-                    ? styles.inputError
-                    : ''
-                }`}
-              />
-            </div>
-
-            {/* Password Requirements */}
-            {formData.password && (
-              <div className={styles.passwordRequirements}>
-                <p>Password must contain:</p>
-                <ul>
-                  <li className={passwordValidations.length ? styles.valid : styles.invalid}>
-                    {passwordValidations.length ? '✅' : '❌'} At least 8 characters
-                  </li>
-                  <li className={passwordValidations.uppercase ? styles.valid : styles.invalid}>
-                    {passwordValidations.uppercase ? '✅' : '❌'} One uppercase letter
-                  </li>
-                  <li className={passwordValidations.lowercase ? styles.valid : styles.invalid}>
-                    {passwordValidations.lowercase ? '✅' : '❌'} One lowercase letter
-                  </li>
-                  <li className={passwordValidations.number ? styles.valid : styles.invalid}>
-                    {passwordValidations.number ? '✅' : '❌'} One number
-                  </li>
-                  <li className={passwordValidations.special ? styles.valid : styles.invalid}>
-                    {passwordValidations.special ? '✅' : '❌'} One special character
-                  </li>
-                </ul>
+            {/* Card Request Section - NEW */}
+            <div className={styles.cardRequestSection}>
+              <h3>Would you like to request a card?</h3>
+              <div className={styles.cardOptions}>
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="requestCard"
+                    value="no"
+                    checked={formData.requestCard === 'no'}
+                    onChange={handleCardRequestChange}
+                  />
+                  <span>No, I'll do it later</span>
+                </label>
+                
+                <label className={styles.radioLabel}>
+                  <input
+                    type="radio"
+                    name="requestCard"
+                    value="yes"
+                    checked={formData.requestCard === 'yes'}
+                    onChange={handleCardRequestChange}
+                  />
+                  <span>Yes, I want a card now</span>
+                </label>
               </div>
-            )}
+              
+              {formData.requestCard === 'yes' && (
+                <div className={styles.cardTypeSelection}>
+                  <label>Select Card Type:</label>
+                  <select
+                    name="cardType"
+                    value={formData.cardType}
+                    onChange={handleChange}
+                    required
+                    className={styles.select}
+                  >
+                    <option value="">Choose a card</option>
+                    <option value="VISA">VISA (Free)</option>
+                    <option value="MASTERCARD">Mastercard ($5 fee)</option>
+                    <option value="AMEX">American Express ($10 fee)</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+{/* Password - Full width */}
+<div className={styles.formGroupFull}>
+  <label className={styles.label}>
+    Password <span>*</span>
+  </label>
+  <input
+    type="password"
+    name="password"
+    value={formData.password}
+    onChange={handleChange}
+    required
+    placeholder="Create a strong password"
+    className={styles.input}
+  />
+</div>
+
+{/* Confirm Password - Full width */}
+<div className={styles.formGroupFull}>
+  <label className={styles.label}>
+    Confirm Password <span>*</span>
+  </label>
+  <input
+    type="password"
+    name="confirmPassword"
+    value={formData.confirmPassword}
+    onChange={handleChange}
+    required
+    placeholder="Re-enter your password"
+    className={`${styles.input} ${
+      formData.confirmPassword && formData.password !== formData.confirmPassword
+        ? styles.inputError
+        : ''
+    }`}
+  />
+</div>
+
+{/* Password Requirements - Full width */}
+{formData.password && (
+  <div className={styles.formGroupFull}>
+    <div className={styles.passwordRequirements}>
+      <p>Password must contain:</p>
+      <ul>
+        <li className={passwordValidations.length ? styles.valid : styles.invalid}>
+          {passwordValidations.length ? '✅' : '❌'} At least 8 characters
+        </li>
+        <li className={passwordValidations.uppercase ? styles.valid : styles.invalid}>
+          {passwordValidations.uppercase ? '✅' : '❌'} One uppercase letter
+        </li>
+        <li className={passwordValidations.lowercase ? styles.valid : styles.invalid}>
+          {passwordValidations.lowercase ? '✅' : '❌'} One lowercase letter
+        </li>
+        <li className={passwordValidations.number ? styles.valid : styles.invalid}>
+          {passwordValidations.number ? '✅' : '❌'} One number
+        </li>
+        <li className={passwordValidations.special ? styles.valid : styles.invalid}>
+          {passwordValidations.special ? '✅' : '❌'} One special character
+        </li>
+      </ul>
+    </div>
+  </div>
+)}
 
             {/* Terms and Conditions */}
             <div className={styles.termsSection}>

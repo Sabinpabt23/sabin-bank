@@ -8,13 +8,31 @@ export async function POST(request: Request) {
     await connectDB();
     
     const body = await request.json();
-    const { fullName, phoneNumber, location, gender, birthDate, idType, idNumber, password } = body;
+    const { 
+      fullName, 
+      email,  // NEW
+      phoneNumber, 
+      location, 
+      gender, 
+      birthDate, 
+      idType, 
+      idNumber, 
+      password,
+      requestedCard,  // NEW
+      cardType  // NEW
+    } = body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ phoneNumber });
+    // Check if user already exists with phone or email
+    const existingUser = await User.findOne({ 
+      $or: [
+        { phoneNumber },
+        { email }  // NEW - check email too
+      ]
+    });
+    
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User already exists with this phone number' },
+        { error: 'User already exists with this phone number or email' },
         { status: 400 }
       );
     }
@@ -28,9 +46,10 @@ export async function POST(request: Request) {
       accountNumber += Math.floor(Math.random() * 10);
     }
 
-    // Create new user
+    // Create new user with all fields
     const newUser = await User.create({
       fullName,
+      email,  // NEW
       phoneNumber,
       location,
       gender,
@@ -40,15 +59,20 @@ export async function POST(request: Request) {
       idPhotoPath: 'temp-path.jpg',
       accountNumber,
       password: hashedPassword,
+      status: 'pending', 
+      requestedCard: requestedCard === 'yes',  
+      cardType: requestedCard === 'yes' ? cardType : null,  
     });
 
     return NextResponse.json({
       success: true,
-      message: 'User created successfully',
+      message: 'Account created! Please wait for admin approval. You will receive an email once verified.',
       user: {
         fullName: newUser.fullName,
+        email: newUser.email,  // NEW
         phoneNumber: newUser.phoneNumber,
-        accountNumber: newUser.accountNumber,
+        status: newUser.status,  // NEW
+        requestedCard: newUser.requestedCard,  // NEW
       },
     }, { status: 201 });
 

@@ -6,6 +6,7 @@ import AddCardModal from '@/app/components/AddCardModal';
 import TransferModal from '@/app/components/TransferModal';
 import Link from 'next/link';
 import DepositModal from '@/app/components/DepositModal';
+import CardDetailsModal from '@/app/components/CardDetailsModal';
 import { 
   FiHome, 
   FiTrendingUp, 
@@ -47,10 +48,19 @@ export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddCardModal, setShowAddCardModal] = useState(false);
-const [showTransferModal, setShowTransferModal] = useState(false);
-const [showDepositModal, setShowDepositModal] = useState(false);
-const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-const [modalType, setModalType] = useState<'deposit' | 'withdraw'>('deposit');
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [modalType, setModalType] = useState<'deposit' | 'withdraw'>('deposit');
+  const [selectedCard, setSelectedCard] = useState<any>(null);
+const [showCardModal, setShowCardModal] = useState(false);
+
+
+const handleCardClick = (card: any) => {
+  console.log('Card clicked:', card); 
+  setSelectedCard(card);
+  setShowCardModal(true);
+};
 
   useEffect(() => {
     // Check if user is logged in
@@ -405,39 +415,92 @@ const [modalType, setModalType] = useState<'deposit' | 'withdraw'>('deposit');
             </div>
 
             <div className={styles.profileGrid}>
-              <div className={styles.profileCard}>
-                <h3>Basic Information</h3>
-                <div className={styles.infoRow}>
-                  <div className={styles.infoLabel}>
-                    <FiUser /> Full Name
-                  </div>
-                  <div className={styles.infoValue}>{dashboardData.user.fullName}</div>
-                </div>
-                <div className={styles.infoRow}>
-                  <div className={styles.infoLabel}>
-                    <FiPhone /> Phone Number
-                  </div>
-                  <div className={styles.infoValue}>{dashboardData.user.phoneNumber}</div>
-                </div>
-                <div className={styles.infoRow}>
-                  <div className={styles.infoLabel}>
-                    <FiMapPin /> Location
-                  </div>
-                  <div className={styles.infoValue}>{dashboardData.user.location}</div>
-                </div>
-                <div className={styles.infoRow}>
-                  <div className={styles.infoLabel}>
-                    <FiCalendarIcon /> Birth Date
-                  </div>
-                  <div className={styles.infoValue}>{formatDate(dashboardData.user.birthDate)}</div>
-                </div>
-                <div className={styles.infoRow}>
-                  <div className={styles.infoLabel}>
-                    <FiUser /> Gender
-                  </div>
-                  <div className={styles.infoValue}>{dashboardData.user.gender}</div>
-                </div>
-              </div>
+           <div className={styles.profileCard}>
+  <h3>Basic Information</h3>
+  <div className={styles.infoRow}>
+    <div className={styles.infoLabel}>
+      <FiUser /> Full Name
+    </div>
+    <div className={styles.infoValue}>{dashboardData.user.fullName}</div>
+  </div>
+  
+  <div className={styles.infoRow}>
+    <div className={styles.infoLabel}>
+      <FiPhone /> Phone Number
+    </div>
+    <div className={styles.infoValue}>{dashboardData.user.phoneNumber}</div>
+  </div>
+  
+  <div className={styles.infoRow}>
+    <div className={styles.infoLabel}>
+      <FiMail /> Email Address
+    </div>
+    <div className={styles.infoValue}>{dashboardData.user.email}</div>
+  </div>
+  
+  <div className={styles.infoRow}>
+    <div className={styles.infoLabel}>
+      <FiMapPin /> Location
+    </div>
+    <div className={styles.infoValue}>{dashboardData.user.location}</div>
+  </div>
+  
+  <div className={styles.infoRow}>
+    <div className={styles.infoLabel}>
+      <FiCalendarIcon /> Birth Date
+    </div>
+    <div className={styles.infoValue}>{formatDate(dashboardData.user.birthDate)}</div>
+  </div>
+  
+  <div className={styles.infoRow}>
+    <div className={styles.infoLabel}>
+      <FiUser /> Gender
+    </div>
+    <div className={styles.infoValue}>{dashboardData.user.gender}</div>
+  </div>
+</div>
+
+
+<div className={styles.profileCard}>
+  <h3>Card Information</h3>
+  <div className={styles.infoRow}>
+    <div className={styles.infoLabel}>
+      <FiCreditCard /> Card Status
+    </div>
+    <div className={styles.infoValue}>
+      {dashboardData.cards.length > 0 ? (
+        <span className={styles.cardActiveBadge}>✅ Active ({dashboardData.cards.length})</span>
+      ) : (
+        <span className={styles.cardInactiveBadge}>⭕ Not Issued</span>
+      )}
+    </div>
+  </div>
+  
+  {dashboardData.cards.length > 0 && (
+    <>
+      <div className={styles.infoRow}>
+        <div className={styles.infoLabel}>
+          <FiCreditCard /> Card Type
+        </div>
+        <div className={styles.infoValue}>
+          {dashboardData.cards.map((card: any, index: number) => (
+            <span key={index} className={styles.cardTypeBadge}>{card.type}</span>
+          ))}
+        </div>
+      </div>
+      <div className={styles.infoRow}>
+        <div className={styles.infoLabel}>
+          <FiCalendar /> Expiry
+        </div>
+        <div className={styles.infoValue}>
+          {dashboardData.cards.map((card: any, index: number) => (
+            <span key={index}>{card.expiry}</span>
+          ))}
+        </div>
+      </div>
+    </>
+  )}
+</div>
 
               <div className={styles.profileCard}>
                 <h3>Account Information</h3>
@@ -490,7 +553,7 @@ const [modalType, setModalType] = useState<'deposit' | 'withdraw'>('deposit');
           </div>
         )}
 
-        {/* Cards Tab */}
+       {/* Cards Tab */}
 {activeTab === 'cards' && (
   <div className={styles.cardsSection}>
     <div className={styles.cardsHeader}>
@@ -498,61 +561,45 @@ const [modalType, setModalType] = useState<'deposit' | 'withdraw'>('deposit');
       <button 
         className={styles.addCardButton}
         onClick={() => setShowAddCardModal(true)}
+        disabled // Disable since cards are now issued by admin
       >
-        <FiPlus /> Add New Card
+        <FiPlus /> Request New Card
       </button>
     </div>
     
     {dashboardData.cards.length === 0 ? (
       <div className={styles.emptyState}>
         <div className={styles.emptyStateIcon}>💳</div>
-        <h3>No cards added yet</h3>
-        <p>Add a debit or credit card to start making payments and withdrawals</p>
-        <div className={styles.cardStatusInfo}>
-          <p>📌 Card Status: <span className={styles.statusBadge}>Not Added</span></p>
-          <p>💡 Benefits of adding a card:</p>
-          <ul>
-            <li>Make online payments</li>
-            <li>Withdraw cash from ATMs</li>
-            <li>Track card expenses</li>
-            <li>Enhanced security</li>
-          </ul>
-        </div>
-        <button 
-          className={styles.primaryButton}
-          onClick={() => setShowAddCardModal(true)}
-        >
-          <FiPlus /> Add Your First Card
-        </button>
+        <h3>No cards yet</h3>
+        <p>Your admin will issue a card after account approval</p>
       </div>
     ) : (
-      <>
-        <div className={styles.cardStatusInfo}>
-          <p>✅ You have {dashboardData.cards.length} active card(s)</p>
-        </div>
-        <div className={styles.cardGrid}>
-          {dashboardData.cards.map((card: any, index: number) => (
-            <div key={index} className={styles.bankCard}>
-              <div className={styles.cardChip}></div>
-              <div className={styles.cardNumber}>{card.number}</div>
-              <div className={styles.cardDetails}>
-                <div className={styles.cardHolder}>
-                  <span className={styles.cardLabel}>Card Holder</span>
-                  <span className={styles.cardValue}>{card.holderName}</span>
-                </div>
-                <div className={styles.cardExpiry}>
-                  <span className={styles.cardLabel}>Expires</span>
-                  <span className={styles.cardValue}>{card.expiry}</span>
-                </div>
+      <div className={styles.cardGrid}>
+        {dashboardData.cards.map((card: any, index: number) => (
+          <div 
+            key={index} 
+            className={styles.bankCard}
+            onClick={() => handleCardClick(card)}
+          >
+            <div className={styles.cardChip}></div>
+            <div className={styles.cardNumber}>{card.number}</div>
+            <div className={styles.cardDetails}>
+              <div className={styles.cardHolder}>
+                <span className={styles.cardLabel}>Card Holder</span>
+                <span className={styles.cardValue}>{card.holderName}</span>
               </div>
-              <div className={styles.cardType}>{card.type}</div>
-              <div className={styles.cardStatus}>
-                <span className={styles.activeBadge}>● Active</span>
+              <div className={styles.cardExpiry}>
+                <span className={styles.cardLabel}>Expires</span>
+                <span className={styles.cardValue}>{card.expiry}</span>
               </div>
             </div>
-          ))}
-        </div>
-      </>
+            <div className={styles.cardType}>{card.type}</div>
+            <div className={styles.cardStatus}>
+              <span className={styles.activeBadge}>● Active</span>
+            </div>
+          </div>
+        ))}
+      </div>
     )}
   </div>
 )}
@@ -622,6 +669,12 @@ const [modalType, setModalType] = useState<'deposit' | 'withdraw'>('deposit');
   onComplete={() => {
     fetchDashboardData(dashboardData.user.phoneNumber);
   }}
+/>
+
+<CardDetailsModal
+  isOpen={showCardModal}
+  onClose={() => setShowCardModal(false)}
+  card={selectedCard}
 />
 
     </div>

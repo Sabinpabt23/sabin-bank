@@ -283,3 +283,118 @@
   align-items: center;
   gap: 0.5rem;
 }
+
+.cardDetailsModal {
+  padding: 1.5rem;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.detailsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detailLabel {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.detailValue {
+  color: #333;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggleCVV {
+  background: none;
+  border: none;
+  color: #2e7d32;
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+
+.toggleCVV:hover {
+  color: #1b5e20;
+}
+
+.warningBox {
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  color: #856404;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.statusBadge {
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.statusBadge.active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.cardPreview {
+  margin-bottom: 1.5rem;
+}
+
+.previewCard {
+  background: linear-gradient(135deg, #1a1a1a, #333);
+  border-radius: 15px;
+  padding: 1.5rem;
+  color: white;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.previewChip {
+  width: 40px;
+  height: 30px;
+  background: linear-gradient(135deg, #ffd700, #ffed8c);
+  border-radius: 5px;
+  margin-bottom: 1rem;
+}
+
+.previewNumber {
+  font-family: monospace;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+
+.previewDetails {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.previewType {
+  text-align: right;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}

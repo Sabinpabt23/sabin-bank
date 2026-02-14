@@ -1293,3 +1293,33 @@
 .viewAllLink:hover {
   background: #e8f5e9;
 }
+
+.cardActiveBadge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 0.3rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.cardInactiveBadge {
+  background: #ffebee;
+  color: #c62828;
+  padding: 0.3rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.cardTypeBadge {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.2rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  margin-right: 0.5rem;
+  display: inline-block;
+}

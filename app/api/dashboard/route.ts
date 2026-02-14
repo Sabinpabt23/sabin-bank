@@ -77,27 +77,32 @@ export async function GET(request: Request) {
     });
 
     // Format cards for frontend
-    const formattedCards = cards.map(c => ({
-      type: c.cardType,
-      number: `**** **** **** ${c.cardNumber.slice(-4)}`,
-      holderName: c.cardHolder,
-      expiry: `${c.expiryMonth}/${c.expiryYear}`,
-    }));
+const formattedCards = cards.map(c => ({
+  id: c._id.toString(),
+  type: c.cardType,
+  number: `**** **** **** ${c.cardNumber.slice(-4)}`, 
+  fullNumber: c.cardNumber, 
+  holderName: c.cardHolder,
+  expiry: `${c.expiryMonth}/${c.expiryYear}`,
+  cvv: c.cvv, 
+  issuedDate: c.createdAt,
+}));
 
-    const dashboardData = {
-      user: {
-        fullName: user.fullName,
-        phoneNumber: user.phoneNumber,
-        location: user.location,
-        gender: user.gender,
-        birthDate: user.birthDate,
-        idType: user.idType,
-        idNumber: user.idNumber,
-        idPhotoPath: user.idPhotoPath,
-        accountNumber: user.accountNumber,
-        memberSince: user.createdAt,
-        accountType: cards.length > 0 ? 'Premium Member' : 'Standard Member',
-      },
+   const dashboardData = {
+  user: {
+    fullName: user.fullName,
+    email: user.email, 
+    phoneNumber: user.phoneNumber,
+    location: user.location,
+    gender: user.gender,
+    birthDate: user.birthDate,
+    idType: user.idType,
+    idNumber: user.idNumber,
+    idPhotoPath: user.idPhotoPath,
+    accountNumber: user.accountNumber,
+    memberSince: user.createdAt,
+    accountType: cards.length > 0 ? 'Premium Member' : 'Standard Member',
+  },
       accounts: [
         {
           type: 'Main Account',
