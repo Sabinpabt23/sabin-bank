@@ -1,4 +1,3 @@
-// models/Card.ts
 import mongoose from 'mongoose';
 
 export interface ICard {
@@ -9,7 +8,11 @@ export interface ICard {
   expiryYear: string;
   cvv: string;
   cardType: 'VISA' | 'MASTERCARD' | 'AMEX';
-  status: 'active' | 'blocked' | 'expired';
+  status: 'active' | 'blocked' | 'expired' | 'pending';  // Added 'pending' here
+  requestStatus?: 'pending' | 'approved' | 'rejected';
+  requestReason?: string;
+  requestedAt?: Date;
+  approvedAt?: Date;
   createdAt: Date;
 }
 
@@ -46,8 +49,21 @@ const CardSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'blocked', 'expired'],
-    default: 'active',
+    enum: ['active', 'blocked', 'expired', 'pending'],  // Added 'pending' here
+    default: 'pending',
+  },
+  requestStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+  },
+  requestReason: {
+    type: String,
+  },
+  requestedAt: {
+    type: Date,
+  },
+  approvedAt: {
+    type: Date,
   },
   createdAt: {
     type: Date,

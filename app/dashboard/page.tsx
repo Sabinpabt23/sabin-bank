@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import AddCardModal from '@/app/components/AddCardModal';
-import TransferModal from '@/app/components/TransferModal';
 import Link from 'next/link';
+import TransferModal from '@/app/components/TransferModal';
 import DepositModal from '@/app/components/DepositModal';
 import CardDetailsModal from '@/app/components/CardDetailsModal';
+import RequestCardModal from '@/app/components/RequestCardModal';
 import { 
   FiHome, 
   FiTrendingUp, 
@@ -37,6 +37,7 @@ import {
   FiFileText,
   FiCamera,
   FiEdit,
+  FiClock as FiPendingIcon,
 } from 'react-icons/fi';
 import styles from '@/styles/pages/dashboard.module.css';
 
@@ -47,20 +48,19 @@ export default function DashboardPage() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('overview');
-  const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [modalType, setModalType] = useState<'deposit' | 'withdraw'>('deposit');
   const [selectedCard, setSelectedCard] = useState<any>(null);
-const [showCardModal, setShowCardModal] = useState(false);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [showRequestCardModal, setShowRequestCardModal] = useState(false);
 
-
-const handleCardClick = (card: any) => {
-  console.log('Card clicked:', card); 
-  setSelectedCard(card);
-  setShowCardModal(true);
-};
+  const handleCardClick = (card: any) => {
+    console.log('Card clicked:', card); 
+    setSelectedCard(card);
+    setShowCardModal(true);
+  };
 
   useEffect(() => {
     // Check if user is logged in
@@ -291,7 +291,7 @@ const handleCardClick = (card: any) => {
 
             {/* Accounts Section */}
             <div className={styles.accountsSection}>
-              {dashboardData.accounts.map((account: any, index: number) => (
+              {dashboardData.accounts?.map((account: any, index: number) => (
                 <div key={index} className={styles.accountCard}>
                   <div className={styles.accountCardHeader}>
                     <span className={styles.accountType}>{account.type}</span>
@@ -309,92 +309,93 @@ const handleCardClick = (card: any) => {
             </div>
 
             {/* Quick Actions */}
-<div className={styles.quickActionsSection}>
-  <h3 className={styles.sectionTitle}>Quick Actions</h3>
-  <div className={styles.actionsGrid}>
-    <button 
-      className={styles.actionButton}
-      onClick={() => setShowTransferModal(true)}
-    >
-      <FiSend /> Send Money
-    </button>
-    <button 
-      className={styles.actionButton}
-      onClick={() => {
-        setModalType('deposit');
-        setShowDepositModal(true);
-      }}
-    >
-      <FiDownload /> Deposit
-    </button>
-    <button 
-      className={styles.actionButton}
-      onClick={() => {
-        setModalType('withdraw');
-        setShowWithdrawModal(true);
-      }}
-    >
-      <FiUpload /> Withdraw
-    </button>
-    <button 
-      className={styles.actionButton}
-      onClick={() => setShowAddCardModal(true)}
-    >
-      <FiCreditCard /> Add Card
-    </button>
-  </div>
-</div>
+            <div className={styles.quickActionsSection}>
+              <h3 className={styles.sectionTitle}>Quick Actions</h3>
+              <div className={styles.actionsGrid}>
+                <button 
+                  className={styles.actionButton}
+                  onClick={() => setShowTransferModal(true)}
+                >
+                  <FiSend /> Send Money
+                </button>
+                <button 
+                  className={styles.actionButton}
+                  onClick={() => {
+                    setModalType('deposit');
+                    setShowDepositModal(true);
+                  }}
+                >
+                  <FiDownload /> Deposit
+                </button>
+                <button 
+                  className={styles.actionButton}
+                  onClick={() => {
+                    setModalType('withdraw');
+                    setShowWithdrawModal(true);
+                  }}
+                >
+                  <FiUpload /> Withdraw
+                </button>
+                <button 
+                  className={styles.actionButton}
+                  onClick={() => setShowRequestCardModal(true)}  
+                >
+                  <FiCreditCard /> Request Card
+                </button>
+              </div>
+            </div>
+
             {/* Recent Transactions */}
-<div className={styles.recentTransactions}>
-  <div className={styles.transactionHeader}>
-    <h3 className={styles.sectionTitle}>Recent Transactions</h3>
-    {dashboardData.recentTransactions.length > 0 && (
-      <Link href="#" className={styles.viewAllLink}>
-        View All <FiChevronRight />
-      </Link>
-    )}
-  </div>
-  
-  {dashboardData.recentTransactions.length === 0 ? (
-    <div className={styles.emptyState}>
-      <div className={styles.emptyStateIcon}>📭</div>
-      <h4>No transactions yet</h4>
-      <p>Your transactions will appear here once you start banking</p>
-      <button 
-        className={styles.primaryButton}
-        onClick={() => {
-          setModalType('deposit');
-          setShowDepositModal(true);
-        }}
-      >
-        Make a Deposit
-      </button>
-    </div>
-  ) : (
-    <div className={styles.transactionList}>
-      {dashboardData.recentTransactions.map((transaction: any) => (
-        <div key={transaction.id} className={styles.transactionItem}>
-          <div className={styles.transactionLeft}>
-            <div className={`${styles.transactionIcon} ${styles[transaction.type]}`}>
-              {transaction.icon}
+            <div className={styles.recentTransactions}>
+              <div className={styles.transactionHeader}>
+                <h3 className={styles.sectionTitle}>Recent Transactions</h3>
+                {dashboardData.recentTransactions?.length > 0 && (
+                  <Link href="#" className={styles.viewAllLink}>
+                    View All <FiChevronRight />
+                  </Link>
+                )}
+              </div>
+              
+              {!dashboardData.recentTransactions?.length ? (
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyStateIcon}>📭</div>
+                  <h4>No transactions yet</h4>
+                  <p>Your transactions will appear here once you start banking</p>
+                  <button 
+                    className={styles.primaryButton}
+                    onClick={() => {
+                      setModalType('deposit');
+                      setShowDepositModal(true);
+                    }}
+                  >
+                    Make a Deposit
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.transactionList}>
+                  {dashboardData.recentTransactions.map((transaction: any) => (
+                    <div key={transaction.id} className={styles.transactionItem}>
+                      <div className={styles.transactionLeft}>
+                        <div className={`${styles.transactionIcon} ${styles[transaction.type]}`}>
+                          {transaction.icon}
+                        </div>
+                        <div className={styles.transactionDetails}>
+                          <h4>{transaction.name}</h4>
+                          <p>
+                            {transaction.category} • {transaction.date} at {transaction.time}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={`${styles.transactionAmount} ${
+                        transaction.type === 'credit' ? styles.positive : styles.negative
+                      }`}>
+                        {transaction.type === 'credit' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className={styles.transactionDetails}>
-              <h4>{transaction.name}</h4>
-              <p>
-                {transaction.category} • {transaction.date} at {transaction.time}
-              </p>
-            </div>
-          </div>
-          <div className={`${styles.transactionAmount} ${
-            transaction.type === 'credit' ? styles.positive : styles.negative
-          }`}>
-            {transaction.type === 'credit' ? '+' : '-'}${transaction.amount.toFixed(2)}
-          </div>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
           </>
         )}
 
@@ -415,93 +416,106 @@ const handleCardClick = (card: any) => {
             </div>
 
             <div className={styles.profileGrid}>
-           <div className={styles.profileCard}>
-  <h3>Basic Information</h3>
-  <div className={styles.infoRow}>
-    <div className={styles.infoLabel}>
-      <FiUser /> Full Name
-    </div>
-    <div className={styles.infoValue}>{dashboardData.user.fullName}</div>
-  </div>
-  
-  <div className={styles.infoRow}>
-    <div className={styles.infoLabel}>
-      <FiPhone /> Phone Number
-    </div>
-    <div className={styles.infoValue}>{dashboardData.user.phoneNumber}</div>
-  </div>
-  
-  <div className={styles.infoRow}>
-    <div className={styles.infoLabel}>
-      <FiMail /> Email Address
-    </div>
-    <div className={styles.infoValue}>{dashboardData.user.email}</div>
-  </div>
-  
-  <div className={styles.infoRow}>
-    <div className={styles.infoLabel}>
-      <FiMapPin /> Location
-    </div>
-    <div className={styles.infoValue}>{dashboardData.user.location}</div>
-  </div>
-  
-  <div className={styles.infoRow}>
-    <div className={styles.infoLabel}>
-      <FiCalendarIcon /> Birth Date
-    </div>
-    <div className={styles.infoValue}>{formatDate(dashboardData.user.birthDate)}</div>
-  </div>
-  
-  <div className={styles.infoRow}>
-    <div className={styles.infoLabel}>
-      <FiUser /> Gender
-    </div>
-    <div className={styles.infoValue}>{dashboardData.user.gender}</div>
-  </div>
-</div>
+              {/* Basic Information */}
+              <div className={styles.profileCard}>
+                <h3>Basic Information</h3>
+                <div className={styles.infoRow}>
+                  <div className={styles.infoLabel}>
+                    <FiUser /> Full Name
+                  </div>
+                  <div className={styles.infoValue}>{dashboardData.user.fullName}</div>
+                </div>
+                
+                <div className={styles.infoRow}>
+                  <div className={styles.infoLabel}>
+                    <FiPhone /> Phone Number
+                  </div>
+                  <div className={styles.infoValue}>{dashboardData.user.phoneNumber}</div>
+                </div>
+                
+                <div className={styles.infoRow}>
+                  <div className={styles.infoLabel}>
+                    <FiMail /> Email Address
+                  </div>
+                  <div className={styles.infoValue}>{dashboardData.user.email}</div>
+                </div>
+                
+                <div className={styles.infoRow}>
+                  <div className={styles.infoLabel}>
+                    <FiMapPin /> Location
+                  </div>
+                  <div className={styles.infoValue}>{dashboardData.user.location}</div>
+                </div>
+                
+                <div className={styles.infoRow}>
+                  <div className={styles.infoLabel}>
+                    <FiCalendarIcon /> Birth Date
+                  </div>
+                  <div className={styles.infoValue}>{formatDate(dashboardData.user.birthDate)}</div>
+                </div>
+                
+                <div className={styles.infoRow}>
+                  <div className={styles.infoLabel}>
+                    <FiUser /> Gender
+                  </div>
+                  <div className={styles.infoValue}>{dashboardData.user.gender}</div>
+                </div>
+              </div>
 
+              {/* Card Information */}
+              <div className={styles.profileCard}>
+                <h3>Card Information</h3>
+                <div className={styles.infoRow}>
+                  <div className={styles.infoLabel}>
+                    <FiCreditCard /> Card Status
+                  </div>
+                  <div className={styles.infoValue}>
+                    {dashboardData.activeCards?.length > 0 ? (
+                      <span className={styles.cardActiveBadge}>✅ Active ({dashboardData.activeCards.length})</span>
+                    ) : (
+                      <span className={styles.cardInactiveBadge}>⭕ Not Issued</span>
+                    )}
+                  </div>
+                </div>
+                
+                {dashboardData.pendingRequests?.length > 0 && (
+                  <div className={styles.infoRow}>
+                    <div className={styles.infoLabel}>
+                      <FiPendingIcon /> Pending Requests
+                    </div>
+                    <div className={styles.infoValue}>
+                      <span className={styles.pendingBadge}>{dashboardData.pendingRequests.length} pending</span>
+                    </div>
+                  </div>
+                )}
+                
+                {dashboardData.activeCards?.length > 0 && (
+                  <>
+                    <div className={styles.infoRow}>
+                      <div className={styles.infoLabel}>
+                        <FiCreditCard /> Card Type
+                      </div>
+                      <div className={styles.infoValue}>
+                        {dashboardData.activeCards.map((card: any, index: number) => (
+                          <span key={index} className={styles.cardTypeBadge}>{card.type}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className={styles.infoRow}>
+                      <div className={styles.infoLabel}>
+                        <FiCalendar /> Expiry
+                      </div>
+                      <div className={styles.infoValue}>
+                        {dashboardData.activeCards.map((card: any, index: number) => (
+                          <span key={index}>{card.expiry}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
 
-<div className={styles.profileCard}>
-  <h3>Card Information</h3>
-  <div className={styles.infoRow}>
-    <div className={styles.infoLabel}>
-      <FiCreditCard /> Card Status
-    </div>
-    <div className={styles.infoValue}>
-      {dashboardData.cards.length > 0 ? (
-        <span className={styles.cardActiveBadge}>✅ Active ({dashboardData.cards.length})</span>
-      ) : (
-        <span className={styles.cardInactiveBadge}>⭕ Not Issued</span>
-      )}
-    </div>
-  </div>
-  
-  {dashboardData.cards.length > 0 && (
-    <>
-      <div className={styles.infoRow}>
-        <div className={styles.infoLabel}>
-          <FiCreditCard /> Card Type
-        </div>
-        <div className={styles.infoValue}>
-          {dashboardData.cards.map((card: any, index: number) => (
-            <span key={index} className={styles.cardTypeBadge}>{card.type}</span>
-          ))}
-        </div>
-      </div>
-      <div className={styles.infoRow}>
-        <div className={styles.infoLabel}>
-          <FiCalendar /> Expiry
-        </div>
-        <div className={styles.infoValue}>
-          {dashboardData.cards.map((card: any, index: number) => (
-            <span key={index}>{card.expiry}</span>
-          ))}
-        </div>
-      </div>
-    </>
-  )}
-</div>
-
+              {/* Account Information */}
               <div className={styles.profileCard}>
                 <h3>Account Information</h3>
                 <div className={styles.infoRow}>
@@ -524,6 +538,7 @@ const handleCardClick = (card: any) => {
                 </div>
               </div>
 
+              {/* Identification Documents */}
               <div className={styles.profileCard}>
                 <h3>Identification Documents</h3>
                 <div className={styles.infoRow}>
@@ -553,56 +568,75 @@ const handleCardClick = (card: any) => {
           </div>
         )}
 
-       {/* Cards Tab */}
-{activeTab === 'cards' && (
-  <div className={styles.cardsSection}>
-    <div className={styles.cardsHeader}>
-      <h2>Your Cards</h2>
-      <button 
-        className={styles.addCardButton}
-        onClick={() => setShowAddCardModal(true)}
-        disabled // Disable since cards are now issued by admin
-      >
-        <FiPlus /> Request New Card
-      </button>
-    </div>
-    
-    {dashboardData.cards.length === 0 ? (
-      <div className={styles.emptyState}>
-        <div className={styles.emptyStateIcon}>💳</div>
-        <h3>No cards yet</h3>
-        <p>Your admin will issue a card after account approval</p>
-      </div>
-    ) : (
-      <div className={styles.cardGrid}>
-        {dashboardData.cards.map((card: any, index: number) => (
-          <div 
-            key={index} 
-            className={styles.bankCard}
-            onClick={() => handleCardClick(card)}
-          >
-            <div className={styles.cardChip}></div>
-            <div className={styles.cardNumber}>{card.number}</div>
-            <div className={styles.cardDetails}>
-              <div className={styles.cardHolder}>
-                <span className={styles.cardLabel}>Card Holder</span>
-                <span className={styles.cardValue}>{card.holderName}</span>
-              </div>
-              <div className={styles.cardExpiry}>
-                <span className={styles.cardLabel}>Expires</span>
-                <span className={styles.cardValue}>{card.expiry}</span>
-              </div>
+        {/* Cards Tab */}
+        {activeTab === 'cards' && (
+          <div className={styles.cardsSection}>
+            <div className={styles.cardsHeader}>
+              <h2>Your Cards</h2>
+              <button 
+                className={styles.addCardButton}
+                onClick={() => setShowRequestCardModal(true)}
+              >
+                <FiPlus /> Request New Card
+              </button>
             </div>
-            <div className={styles.cardType}>{card.type}</div>
-            <div className={styles.cardStatus}>
-              <span className={styles.activeBadge}>● Active</span>
-            </div>
+            
+            {/* Show pending requests if any */}
+            {dashboardData.pendingRequests?.length > 0 && (
+              <div className={styles.pendingRequests}>
+                <h3>Pending Requests</h3>
+                {dashboardData.pendingRequests.map((request: any) => (
+                  <div key={request._id} className={styles.pendingCard}>
+                    <div className={styles.pendingCardHeader}>
+                      <span className={styles.pendingBadge}>⏳ Pending</span>
+                      <span className={styles.cardType}>{request.cardType}</span>
+                    </div>
+                    <p className={styles.requestReason}>Reason: {request.requestReason}</p>
+                    <p className={styles.requestDate}>
+                      Requested: {new Date(request.requestedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Show active cards */}
+            {!dashboardData.activeCards?.length && !dashboardData.pendingRequests?.length ? (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyStateIcon}>💳</div>
+                <h3>No cards yet</h3>
+                <p>Request a card and admin will approve it</p>
+              </div>
+            ) : (
+              <div className={styles.cardGrid}>
+                {dashboardData.activeCards?.map((card: any, index: number) => (
+                  <div 
+                    key={index} 
+                    className={styles.bankCard}
+                    onClick={() => handleCardClick(card)}
+                  >
+                    <div className={styles.cardChip}></div>
+                    <div className={styles.cardNumber}>{card.number}</div>
+                    <div className={styles.cardDetails}>
+                      <div className={styles.cardHolder}>
+                        <span className={styles.cardLabel}>Card Holder</span>
+                        <span className={styles.cardValue}>{card.holderName}</span>
+                      </div>
+                      <div className={styles.cardExpiry}>
+                        <span className={styles.cardLabel}>Expires</span>
+                        <span className={styles.cardValue}>{card.expiry}</span>
+                      </div>
+                    </div>
+                    <div className={styles.cardType}>{card.type}</div>
+                    <div className={styles.cardStatus}>
+                      <span className={styles.activeBadge}>● Active</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        ))}
-      </div>
-    )}
-  </div>
-)}
+        )}
 
         {/* Settings Tab */}
         {activeTab === 'settings' && (
@@ -631,52 +665,52 @@ const handleCardClick = (card: any) => {
           </div>
         )}
       </main>
-       {/* Modals */}
-<AddCardModal
-  isOpen={showAddCardModal}
-  onClose={() => setShowAddCardModal(false)}
-  phoneNumber={dashboardData.user.phoneNumber}
-  onCardAdded={() => {
-    fetchDashboardData(dashboardData.user.phoneNumber);
-  }}
-/>
 
-<TransferModal
-  isOpen={showTransferModal}
-  onClose={() => setShowTransferModal(false)}
-  fromPhone={dashboardData.user.phoneNumber}
-  balance={dashboardData.summary.totalBalance}
-  onTransferComplete={() => {
-    fetchDashboardData(dashboardData.user.phoneNumber);
-  }}
-/>
+      {/* Modals */}
+      <RequestCardModal
+        isOpen={showRequestCardModal} 
+        onClose={() => setShowRequestCardModal(false)}
+        phoneNumber={dashboardData.user.phoneNumber}
+        onRequestSubmitted={() => {  
+          fetchDashboardData(dashboardData.user.phoneNumber);
+        }}
+      />
 
-<DepositModal
-  isOpen={showDepositModal}
-  onClose={() => setShowDepositModal(false)}
-  type={modalType}
-  phoneNumber={dashboardData.user.phoneNumber}
-  onComplete={() => {
-    fetchDashboardData(dashboardData.user.phoneNumber);
-  }}
-/>
+      <TransferModal
+        isOpen={showTransferModal}
+        onClose={() => setShowTransferModal(false)}
+        fromPhone={dashboardData.user.phoneNumber}
+        balance={dashboardData.summary.totalBalance}
+        onTransferComplete={() => {
+          fetchDashboardData(dashboardData.user.phoneNumber);
+        }}
+      />
 
-<DepositModal
-  isOpen={showWithdrawModal}
-  onClose={() => setShowWithdrawModal(false)}
-  type="withdraw"
-  phoneNumber={dashboardData.user.phoneNumber}
-  onComplete={() => {
-    fetchDashboardData(dashboardData.user.phoneNumber);
-  }}
-/>
+      <DepositModal
+        isOpen={showDepositModal}
+        onClose={() => setShowDepositModal(false)}
+        type={modalType}
+        phoneNumber={dashboardData.user.phoneNumber}
+        onComplete={() => {
+          fetchDashboardData(dashboardData.user.phoneNumber);
+        }}
+      />
 
-<CardDetailsModal
-  isOpen={showCardModal}
-  onClose={() => setShowCardModal(false)}
-  card={selectedCard}
-/>
+      <DepositModal
+        isOpen={showWithdrawModal}
+        onClose={() => setShowWithdrawModal(false)}
+        type="withdraw"
+        phoneNumber={dashboardData.user.phoneNumber}
+        onComplete={() => {
+          fetchDashboardData(dashboardData.user.phoneNumber);
+        }}
+      />
 
+      <CardDetailsModal
+        isOpen={showCardModal}
+        onClose={() => setShowCardModal(false)}
+        card={selectedCard}
+      />
     </div>
   );
 }

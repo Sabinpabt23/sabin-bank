@@ -28,8 +28,17 @@ export async function GET(request: Request) {
       );
     }
 
-    // Get user's cards
-    const cards = await Card.find({ phoneNumber, status: 'active' });
+    // Get user's active cards (status = 'active')
+    const activeCards = await Card.find({ 
+      phoneNumber, 
+      status: 'active' 
+    });
+
+    // Get user's pending card requests
+    const pendingRequests = await Card.find({ 
+      phoneNumber, 
+      requestStatus: 'pending' 
+    }).sort({ requestedAt: -1 });
 
     // Get user's transactions
     const transactions = await Transaction.find({
@@ -38,8 +47,6 @@ export async function GET(request: Request) {
         { toPhone: phoneNumber }
       ]
     }).sort({ createdAt: -1 }).limit(10);
-
-    console.log('Found transactions:', transactions.length); // For debugging
 
     // Format transactions for frontend
     const formattedTransactions = transactions.map(t => {
@@ -76,71 +83,87 @@ export async function GET(request: Request) {
       };
     });
 
-    // Format cards for frontend
-const formattedCards = cards.map(c => ({
-  id: c._id.toString(),
-  type: c.cardType,
-  number: `**** **** **** ${c.cardNumber.slice(-4)}`, 
-  fullNumber: c.cardNumber, 
-  holderName: c.cardHolder,
-  expiry: `${c.expiryMonth}/${c.expiryYear}`,
-  cvv: c.cvv, 
-  issuedDate: c.createdAt,
-}));
+    // Format active cards for frontend
+    const formattedActiveCards = activeCards.map(c => ({
+      id: c._id.toString(),
+      type: c.cardType,
+      number: `**** **** **** ${c.cardNumber.slice(-4)}`,
+      fullNumber: c.cardNumber,
+      holderName: c.cardHolder,
+      expiry: `${c.expiryMonth}/${c.expiryYear}`,
+      cvv: c.cvv,
+      issuedDate: c.createdAt,
+    }));
 
-   const dashboardData = {
-  user: {
-    fullName: user.fullName,
-    email: user.email, 
-    phoneNumber: user.phoneNumber,
-    location: user.location,
-    gender: user.gender,
-    birthDate: user.birthDate,
-    idType: user.idType,
-    idNumber: user.idNumber,
-    idPhotoPath: user.idPhotoPath,
-    accountNumber: user.accountNumber,
-    memberSince: user.createdAt,
-    accountType: cards.length > 0 ? 'Premium Member' : 'Standard Member',
-  },
+    // Format pending requests for frontend
+    const formattedPendingRequests = pendingRequests.map(r => ({
+      _id: r._id.toString(),
+      cardType: r.cardType,
+      cardHolder: r.cardHolder,
+      requestReason: r.requestReason,
+      requestedAt: r.requestedAt,
+      status: r.requestStatus,
+    }));
+
+    // Calculate balance from transactions
+    const calculateBalance = () => {
+      let balance = 1000; // Starting bonus
+      transactions.forEach(t => {
+        if (t.toPhone === phoneNumber) {
+          balance += t.amount;
+        } else if (t.fromPhone === phoneNumber) {
+          balance -= t.amount;
+        }
+      });
+      return balance;
+    };
+
+    const currentBalance = calculateBalance();
+
+    // Prepare dashboard data
+    const dashboardData = {
+      user: {
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        location: user.location,
+        gender: user.gender,
+        birthDate: user.birthDate,
+        idType: user.idType,
+        idNumber: user.idNumber,
+        idPhotoPath: user.idPhotoPath,
+        accountNumber: user.accountNumber,
+        memberSince: user.createdAt,
+        accountType: activeCards.length > 0 ? 'Premium Member' : 'Standard Member',
+      },
       accounts: [
         {
           type: 'Main Account',
           accountNumber: user.accountNumber,
-          balance: calculateBalance(transactions, phoneNumber),
+          balance: currentBalance,
           accountNumberMasked: `**** ${user.accountNumber.slice(-4)}`,
           status: 'Active',
         }
       ],
       summary: {
-        totalBalance: calculateBalance(transactions, phoneNumber),
+        totalBalance: currentBalance,
         pendingTransactions: transactions.filter(t => t.status === 'pending').length,
         accountStatus: 'Active',
-        totalCards: cards.length,
+        totalCards: activeCards.length,
+        pendingRequests: pendingRequests.length,
       },
-      cards: formattedCards,
+      activeCards: formattedActiveCards,
+      pendingRequests: formattedPendingRequests,
       recentTransactions: formattedTransactions,
     };
 
     return NextResponse.json(dashboardData);
 
   } catch (error) {
-    console.error('Dashboard error:', error);
+    console.error('Dashboard API error:', error);
     return NextResponse.json(
-      { error: 'Something went wrong' },
+      { error: 'Failed to load dashboard data' },
       { status: 500 }
     );
   }
-}
-
-function calculateBalance(transactions: any[], phoneNumber: string) {
-  let balance = 1000; // Starting bonus
-  transactions.forEach(t => {
-    if (t.toPhone === phoneNumber) {
-      balance += t.amount;
-    } else if (t.fromPhone === phoneNumber) {
-      balance -= t.amount;
-    }
-  });
-  return balance;
 }

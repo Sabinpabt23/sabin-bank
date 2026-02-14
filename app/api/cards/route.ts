@@ -16,9 +16,22 @@ export async function GET(request: Request) {
       );
     }
 
-    const cards = await Card.find({ phoneNumber, status: 'active' });
+    // Get active cards
+    const activeCards = await Card.find({ 
+      phoneNumber, 
+      status: 'active' 
+    });
 
-    return NextResponse.json({ cards });
+    // Get pending requests
+    const pendingRequests = await Card.find({ 
+      phoneNumber, 
+      requestStatus: 'pending' 
+    });
+
+    return NextResponse.json({ 
+      activeCards,
+      pendingRequests 
+    });
 
   } catch (error) {
     console.error('Cards fetch error:', error);

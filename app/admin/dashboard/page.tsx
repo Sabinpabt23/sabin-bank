@@ -13,18 +13,18 @@ export default function AdminDashboardPage() {
     activeUsers: 0,
     totalCards: 0,
     totalTransactions: 0,
+    pendingCardRequests: 0, // ADD THIS
   });
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [cardRequests, setCardRequests] = useState([]); // ADD THIS
   const [recentUsers, setRecentUsers] = useState([]);
 
   useEffect(() => {
-    // Check if admin is logged in
     const admin = localStorage.getItem('admin');
     if (!admin) {
       router.push('/admin/login');
       return;
     }
-
     fetchDashboardData();
   }, []);
 
@@ -36,6 +36,7 @@ export default function AdminDashboardPage() {
       if (res.ok) {
         setStats(data.stats);
         setPendingRequests(data.pendingRequests || []);
+        setCardRequests(data.cardRequests || []); // ADD THIS
         setRecentUsers(data.recentUsers || []);
       }
     } catch (error) {
@@ -84,6 +85,10 @@ export default function AdminDashboardPage() {
     router.push('/admin/login');
   };
 
+  const handleCardRequest = (requestId: string, action: 'approve' | 'reject') => {
+    router.push(`/admin/card-requests`);
+  };
+
   if (loading) {
     return (
       <div className={styles.loading}>
@@ -104,15 +109,17 @@ export default function AdminDashboardPage() {
         
         <nav className={styles.nav}>
           <button className={`${styles.navItem} ${styles.active}`}>Dashboard</button>
-          <button className={styles.navItem}>Users</button>
-          <button className={styles.navItem}>Cards</button>
-          <button className={styles.navItem}>Transactions</button>
-          <button className={styles.navItem}>Settings</button>
+          <button onClick={() => router.push('/admin/users')} className={styles.navItem}>Users</button>
+          <button onClick={() => router.push('/admin/cards')} className={styles.navItem}>Cards</button>
+          <button onClick={() => router.push('/admin/card-requests')} className={styles.navItem}>
+            Card Requests {stats.pendingCardRequests > 0 && (
+              <span className={styles.badge}>{stats.pendingCardRequests}</span>
+            )}
+          </button>
+          <button onClick={() => router.push('/admin/transactions')} className={styles.navItem}>Transactions</button>
         </nav>
 
-        <button onClick={handleLogout} className={styles.logoutButton}>
-          Logout
-        </button>
+        <button onClick={handleLogout} className={styles.logoutButton}>Logout</button>
       </aside>
 
       {/* Main Content */}
@@ -140,11 +147,65 @@ export default function AdminDashboardPage() {
             <h3>Total Cards</h3>
             <p className={styles.statNumber}>{stats.totalCards}</p>
           </div>
+          <div className={styles.statCard}>
+            <h3>Card Requests</h3>
+            <p className={styles.statNumber}>{stats.pendingCardRequests}</p>
+          </div>
         </div>
+
+        {/* Pending Card Requests Section - NEW */}
+        {cardRequests.length > 0 && (
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2>Pending Card Requests</h2>
+              <button 
+                onClick={() => router.push('/admin/card-requests')}
+                className={styles.viewAllButton}
+              >
+                View All
+              </button>
+            </div>
+            <div className={styles.tableContainer}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Card Type</th>
+                    <th>Card Holder</th>
+                    <th>Reason</th>
+                    <th>Requested</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cardRequests.slice(0, 5).map((req: any) => (
+                    <tr key={req.id}>
+                      <td>{req.userName}</td>
+                      <td>
+                        <span className={styles.cardTypeBadge}>{req.cardType}</span>
+                      </td>
+                      <td>{req.cardHolder}</td>
+                      <td className={styles.reasonCell}>{req.reason}</td>
+                      <td>{new Date(req.requestedAt).toLocaleDateString()}</td>
+                      <td>
+                        <button 
+  onClick={() => router.push(`/admin/card-requests`)}
+  className={styles.approveButton}
+>
+  View Details
+</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
         {/* Pending Approval Requests */}
         <section className={styles.section}>
-          <h2>Pending Approval Requests</h2>
+          <h2>Pending User Approvals</h2>
           <div className={styles.tableContainer}>
             <table className={styles.table}>
               <thead>

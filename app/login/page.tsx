@@ -112,8 +112,8 @@ export default function LoginPage() {
             </div>
 
             <div className={styles.forgotPassword}>
-              <a href="#">Forgot password?</a>
-            </div>
+  <Link href="/forgot-password">Forgot password?</Link>
+</div>
 
             <div className={styles.rememberMe}>
               <input
