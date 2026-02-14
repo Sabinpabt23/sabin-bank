@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^0.564.0",
     "mongoose": "^9.2.1",
     "multer": "^2.0.2",
     "next": "16.1.6",

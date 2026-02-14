@@ -54,7 +54,7 @@ export default function AdminCardRequestsPage() {
       alert(data.error || 'Failed to approve');
     }
   } catch (error) {
-    console.error('❌ Error:', error); // Add this
+    console.error('❌ Error:', error); 
     alert('Something went wrong');
   } finally {
     setProcessingId(null);
