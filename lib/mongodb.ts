@@ -1,8 +1,9 @@
 // lib/mongodb.ts
 import mongoose from 'mongoose';
 
-// Check if MONGODB_URI exists and is a string
 const MONGODB_URI = process.env.MONGODB_URI;
+
+console.log('🔍 MONGODB_URI from env:', MONGODB_URI);
 
 if (!MONGODB_URI) {
   throw new Error('Please define MONGODB_URI in .env file');
@@ -11,61 +12,77 @@ if (!MONGODB_URI) {
 // Now TypeScript knows MONGODB_URI is definitely a string
 const uri: string = MONGODB_URI;
 
-// Define the cached type
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
 }
 
-// Declare global mongoose cache
 declare global {
-  var mongoose: MongooseCache | undefined;
+  var mongoose: MongooseCache;
 }
 
-// Initialize cache
-const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
-global.mongoose = cached;
-
-// Connection options optimized for Windows/Node.js v24
-const options = {
-  serverSelectionTimeoutMS: 10000,
-  socketTimeoutMS: 45000,
-  family: 4, // Force IPv4
-  retryWrites: true,
-  retryReads: true,
-  directConnection: false,
-  maxPoolSize: 10,
-  minPoolSize: 0
-};
+global.mongoose = global.mongoose || { conn: null, promise: null };
+const cached = global.mongoose;
 
 async function connectDB() {
-  if (cached.conn) {
-    console.log('✅ Using cached MongoDB connection');
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    console.log('🔄 Connecting to MongoDB...');
-    cached.promise = mongoose.connect(uri, options)
-      .then((mongoose) => {
-        console.log('✅ MongoDB connected successfully');
-        return mongoose;
-      })
-      .catch((error) => {
-        console.error('❌ MongoDB connection error:', error.message);
-        cached.promise = null;
-        throw error;
-      });
-  }
-
   try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    throw e;
-  }
+    console.log('🔄 connectDB called');
+    
+    // Check if mongoose is actually connected
+    if (cached.conn) {
+      console.log('🔍 Found cached connection, checking state...');
+      const state = mongoose.connection.readyState;
+      // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+      console.log('📊 Current readyState:', state);
+      
+      if (state === 1) {
+        console.log('✅ Using existing MongoDB connection');
+        return cached.conn;
+      } else {
+        console.log('⚠️ Connection stale (state ' + state + '), reconnecting...');
+        cached.conn = null;
+        cached.promise = null;
+      }
+    }
 
-  return cached.conn;
+    if (!cached.promise) {
+      console.log('🔄 Creating new MongoDB connection to:', uri);
+      const opts = {
+        bufferCommands: false,
+        serverSelectionTimeoutMS: 5000,
+      };
+      
+      cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
+        console.log('✅ MongoDB connected successfully');
+        console.log('📊 Connection state after connect:', mongoose.connection.readyState);
+        return mongoose;
+      }).catch(err => {
+        console.error('❌ Connection promise rejected:', err.message);
+        cached.promise = null;
+        throw err;
+      });
+    }
+
+    cached.conn = await cached.promise;
+    return cached.conn;
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    cached.promise = null;
+    throw error;
+  }
+}
+
+// Add a health check function
+export async function checkDBHealth() {
+  const state = mongoose.connection.readyState;
+  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  return {
+    isConnected: state === 1,
+    state: states[state] || 'unknown',
+    readyState: state,
+    hasCachedConnection: !!cached.conn,
+    hasCachedPromise: !!cached.promise,
+  };
 }
 
 export default connectDB;
