@@ -158,26 +158,33 @@ export default function AdminDashboardPage() {
           <p>Administrator</p>
         </div>
         
-        <nav className={styles.nav}>
-          <button className={`${styles.navItem} ${styles.active}`}>
-            <LayoutDashboard size={20} /> <span>Dashboard</span>
-          </button>
-          <button onClick={() => router.push('/admin/users')} className={styles.navItem}>
-            <Users size={20} /> <span>Users</span>
-          </button>
-          <button onClick={() => router.push('/admin/cards')} className={styles.navItem}>
-            <CreditCard size={20} /> <span>Cards</span>
-          </button>
-          <button onClick={() => router.push('/admin/card-requests')} className={styles.navItem}>
-            <AlertCircle size={20} /> <span>Requests</span>
-            {stats.pendingCardRequests > 0 && (
-              <span className={styles.badge}>{stats.pendingCardRequests}</span>
-            )}
-          </button>
-          <button onClick={() => router.push('/admin/transactions')} className={styles.navItem}>
-            <Activity size={20} /> <span>Transactions</span>
-          </button>
-        </nav>
+       <nav className={styles.nav}>
+  <button className={`${styles.navItem} ${styles.active}`}>Dashboard</button>
+  <button onClick={() => router.push('/admin/users')} className={styles.navItem}>Users</button>
+  <button onClick={() => router.push('/admin/cards')} className={styles.navItem}>Cards</button>
+  <button onClick={() => router.push('/admin/card-requests')} className={styles.navItem}>
+    Card Requests 
+    {stats.pendingCardRequests > 0 && (
+      <span className={styles.badge}>{stats.pendingCardRequests}</span>
+    )}
+  </button>
+  <button onClick={() => router.push('/admin/transactions')} className={styles.navItem}>Transactions</button>
+  {/* Add System Health Button */}
+  <button 
+    onClick={() => router.push('/system-health')} 
+    className={styles.navItem}
+    style={{ 
+      background: 'red', 
+      color: 'white',
+      marginTop: '1rem',
+      border: '1px solid red',
+      boxShadow: '0 2px 4px rgba(255, 0, 0, 0.2)',
+      transition: 'background 0.3s, color 0.3s',
+    }}
+  >
+    🔧 System Health
+  </button>
+</nav>
 
         <button onClick={handleLogout} className={styles.logoutButton}>
           <LogOut size={20} /> <span>Logout</span>

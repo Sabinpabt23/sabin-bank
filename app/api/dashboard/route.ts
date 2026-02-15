@@ -46,7 +46,7 @@ export async function GET(request: Request) {
         { fromPhone: phoneNumber },
         { toPhone: phoneNumber }
       ]
-    }).sort({ createdAt: -1 }).limit(10);
+    }).sort({ createdAt: -1 });
 
     // Format transactions for frontend
     const formattedTransactions = transactions.map(t => {
@@ -105,18 +105,28 @@ export async function GET(request: Request) {
       status: r.requestStatus,
     }));
 
-    // Calculate balance from transactions
-    const calculateBalance = () => {
-      let balance = 1000; // Starting bonus
-      transactions.forEach(t => {
-        if (t.toPhone === phoneNumber) {
-          balance += t.amount;
-        } else if (t.fromPhone === phoneNumber) {
-          balance -= t.amount;
-        }
-      });
-      return balance;
-    };
+   // Calculate balance from transactions
+const calculateBalance = () => {
+  let balance = 1000; // Starting bonus
+  
+  // Sort transactions by date to ensure correct order
+  const sortedTransactions = [...transactions].sort((a, b) => 
+    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+  
+  sortedTransactions.forEach(t => {
+    if (t.toPhone === phoneNumber) {
+      balance += t.amount;
+      console.log(`📈 Credit: +$${t.amount} → New balance: $${balance}`);
+    } else if (t.fromPhone === phoneNumber) {
+      balance -= t.amount;
+      console.log(`📉 Debit: -$${t.amount} → New balance: $${balance}`);
+    }
+  });
+  
+  console.log(`✅ Final balance for ${phoneNumber}: $${balance}`);
+  return balance;
+};
 
     const currentBalance = calculateBalance();
 
@@ -167,3 +177,4 @@ export async function GET(request: Request) {
     );
   }
 }
+

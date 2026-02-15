@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar,
-  ComposedChart, Line
+  ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Line, Bar
 } from 'recharts';
 import { 
   FiTrendingUp, FiTrendingDown, FiDollarSign, FiActivity,
@@ -28,6 +27,10 @@ export default function AdminTransactionsPage() {
     depositVolume: 0,
     withdrawalVolume: 0,
     transferVolume: 0,
+    volumeChange: '+0',
+    transactionChange: '+0',
+    depositsChange: '+0',
+    withdrawalsChange: '+0',
   });
   const [chartData, setChartData] = useState([]);
   const [topUsers, setTopUsers] = useState([]);
@@ -35,7 +38,7 @@ export default function AdminTransactionsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [chartType, setChartType] = useState('volume'); // volume, count, ohlc
+  const [chartType, setChartType] = useState('volume');
 
   useEffect(() => {
     const admin = localStorage.getItem('admin');
@@ -112,6 +115,15 @@ export default function AdminTransactionsPage() {
       t.amount.toString().includes(searchTerm)
     );
   });
+
+  const formatChange = (change: string) => {
+    const num = parseFloat(change);
+    return {
+      value: change,
+      isPositive: num >= 0,
+      icon: num >= 0 ? <FiTrendingUp /> : <FiTrendingDown />,
+    };
+  };
 
   if (loading) {
     return (
@@ -237,7 +249,7 @@ export default function AdminTransactionsPage() {
           </div>
         )}
 
-        {/* Stats Cards */}
+        {/* Stats Cards with Real Percentages */}
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <div className={styles.statIcon} style={{ background: '#e8f5e9', color: '#2e7d32' }}>
@@ -246,8 +258,9 @@ export default function AdminTransactionsPage() {
             <div className={styles.statInfo}>
               <span className={styles.statLabel}>Total Volume</span>
               <span className={styles.statValue}>${stats.totalVolume.toLocaleString()}</span>
-              <span className={styles.statChange}>
-                <FiTrendingUp /> +12.5%
+              <span className={parseFloat(stats.volumeChange) >= 0 ? styles.statChangePositive : styles.statChangeNegative}>
+                {formatChange(stats.volumeChange).icon}
+                {stats.volumeChange}%
               </span>
             </div>
           </div>
@@ -257,10 +270,11 @@ export default function AdminTransactionsPage() {
               <FiBarChart2 />
             </div>
             <div className={styles.statInfo}>
-              <span className={styles.statLabel}>Total Trades</span>
+              <span className={styles.statLabel}>Total Transactions</span>
               <span className={styles.statValue}>{stats.totalCount}</span>
-              <span className={styles.statChange}>
-                <FiTrendingUp /> +8.2%
+              <span className={parseFloat(stats.transactionChange) >= 0 ? styles.statChangePositive : styles.statChangeNegative}>
+                {formatChange(stats.transactionChange).icon}
+                {stats.transactionChange}%
               </span>
             </div>
           </div>
@@ -272,8 +286,9 @@ export default function AdminTransactionsPage() {
             <div className={styles.statInfo}>
               <span className={styles.statLabel}>Deposits</span>
               <span className={styles.statValue}>${stats.depositVolume.toLocaleString()}</span>
-              <span className={styles.statChangePositive}>
-                <FiTrendingUp /> +15.3%
+              <span className={parseFloat(stats.depositsChange) >= 0 ? styles.statChangePositive : styles.statChangeNegative}>
+                {formatChange(stats.depositsChange).icon}
+                {stats.depositsChange}%
               </span>
             </div>
           </div>
@@ -285,83 +300,144 @@ export default function AdminTransactionsPage() {
             <div className={styles.statInfo}>
               <span className={styles.statLabel}>Withdrawals</span>
               <span className={styles.statValue}>${stats.withdrawalVolume.toLocaleString()}</span>
-              <span className={styles.statChangeNegative}>
-                <FiTrendingDown /> -3.1%
+              <span className={parseFloat(stats.withdrawalsChange) >= 0 ? styles.statChangePositive : styles.statChangeNegative}>
+                {formatChange(stats.withdrawalsChange).icon}
+                {stats.withdrawalsChange}%
               </span>
             </div>
           </div>
         </div>
 
-        {/* Chart Section */}
-        <div className={styles.chartSection}>
-          <div className={styles.chartHeader}>
-            <h2>Financial Overview</h2>
-            <div className={styles.chartControls}>
-              <button 
-                className={`${styles.chartTypeButton} ${chartType === 'volume' ? styles.active : ''}`}
-                onClick={() => setChartType('volume')}
-              >
-                Volume
-              </button>
-              <button 
-                className={`${styles.chartTypeButton} ${chartType === 'ohlc' ? styles.active : ''}`}
-                onClick={() => setChartType('ohlc')}
-              >
-                 Range
-              </button>
-              <button 
-                className={`${styles.chartTypeButton} ${chartType === 'count' ? styles.active : ''}`}
-                onClick={() => setChartType('count')}
-              >
-                Frequency
-              </button>
-            </div>
-          </div>
+{/* Chart Section with NEPSE-style colors */}
+<div className={styles.chartSection}>
+  <div className={styles.chartHeader}>
+    <h2>Financial Overview</h2>
+    <div className={styles.chartControls}>
+      <button 
+        className={`${styles.chartTypeButton} ${chartType === 'volume' ? styles.active : ''}`}
+        onClick={() => setChartType('volume')}
+      >
+        Volume
+      </button>
+      <button 
+        className={`${styles.chartTypeButton} ${chartType === 'ohlc' ? styles.active : ''}`}
+        onClick={() => setChartType('ohlc')}
+      >
+        Range
+      </button>
+      <button 
+        className={`${styles.chartTypeButton} ${chartType === 'count' ? styles.active : ''}`}
+        onClick={() => setChartType('count')}
+      >
+        Frequency
+      </button>
+    </div>
+  </div>
 
-          <div className={styles.chartContainer}>
-            <ResponsiveContainer width="100%" height={400}>
-              {chartType === 'volume' ? (
-                <ComposedChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="displayDate" />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
-                  <Tooltip 
-                    contentStyle={{ background: 'white', borderRadius: '10px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' }}
-                  />
-                  <Bar yAxisId="left" dataKey="volume" fill="#2e7d32" opacity={0.6} />
-                  <Line yAxisId="right" type="monotone" dataKey="close" stroke="#ff9800" strokeWidth={2} />
-                </ComposedChart>
-              ) : chartType === 'ohlc' ? (
-                <ComposedChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="displayDate" />
-                  <YAxis />
-                  <Tooltip 
-                    contentStyle={{ background: 'white', borderRadius: '10px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' }}
-                  />
-                  <Bar dataKey="high" fill="#4caf50" name="High" />
-                  <Bar dataKey="low" fill="#f44336" name="Low" />
-                  <Line type="monotone" dataKey="close" stroke="#2196f3" strokeWidth={2} name="Close" />
-                </ComposedChart>
-              ) : (
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#2e7d32" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#2e7d32" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="displayDate" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="count" stroke="#2e7d32" fillOpacity={1} fill="url(#colorCount)" />
-                </AreaChart>
-              )}
-            </ResponsiveContainer>
-          </div>
-        </div>
+  <div className={styles.chartContainer}>
+    <ResponsiveContainer width="100%" height={400}>
+      {chartType === 'volume' ? (
+        <ComposedChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis dataKey="displayDate" />
+          <YAxis yAxisId="left" />
+          <YAxis yAxisId="right" orientation="right" />
+          <Tooltip 
+            contentStyle={{ background: 'white', borderRadius: '10px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' }}
+            formatter={(value: any, name: any) => {
+              const color = value > 0 ? '#4caf50' : '#f44336';
+              return [<span style={{ color }}>${value}</span>, name];
+            }}
+          />
+          {/* Use a single Bar with custom cell rendering */}
+          <Bar yAxisId="left" dataKey="volume" opacity={0.7}>
+            {chartData.map((entry: any, index: number) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={entry.isPositive ? '#4caf50' : '#f44336'} 
+              />
+            ))}
+          </Bar>
+          <Line 
+            yAxisId="right" 
+            type="monotone" 
+            dataKey="close" 
+            stroke="#2196f3" 
+            strokeWidth={2} 
+            dot={(props: any) => {
+              const entry = props.payload;
+              const isPositive = entry?.close >= entry?.open;
+              return (
+                <circle 
+                  cx={props.cx} 
+                  cy={props.cy} 
+                  r={4} 
+                  fill={isPositive ? '#4caf50' : '#f44336'} 
+                  stroke="white" 
+                  strokeWidth={2}
+                />
+              );
+            }}
+          />
+        </ComposedChart>
+      ) : chartType === 'ohlc' ? (
+        <ComposedChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis dataKey="displayDate" />
+          <YAxis />
+          <Tooltip 
+            contentStyle={{ background: 'white', borderRadius: '10px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' }}
+          />
+          <Bar dataKey="high" opacity={0.3}>
+            {chartData.map((entry: any, index: number) => {
+              const isPositive = entry.close >= entry.open;
+              return (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={isPositive ? '#4caf50' : '#f44336'} 
+                />
+              );
+            })}
+          </Bar>
+          <Line 
+            type="monotone" 
+            dataKey="close" 
+            stroke="#2196f3" 
+            strokeWidth={2}
+            dot={(props: any) => {
+              const entry = props.payload;
+              const isPositive = entry?.close >= entry?.open;
+              return (
+                <circle 
+                  cx={props.cx} 
+                  cy={props.cy} 
+                  r={4} 
+                  fill={isPositive ? '#4caf50' : '#f44336'} 
+                  stroke="white" 
+                  strokeWidth={2}
+                />
+              );
+            }}
+          />
+        </ComposedChart>
+      ) : (
+        <AreaChart data={chartData}>
+          <defs>
+            <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#2196f3" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#2196f3" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis dataKey="displayDate" />
+          <YAxis />
+          <Tooltip />
+          <Area type="monotone" dataKey="count" stroke="#2196f3" fillOpacity={1} fill="url(#colorCount)" />
+        </AreaChart>
+      )}
+    </ResponsiveContainer>
+  </div>
+</div>
 
         {/* Two Column Layout */}
         <div className={styles.twoColumn}>
@@ -403,7 +479,7 @@ export default function AdminTransactionsPage() {
 
           {/* Right Column - Top Users */}
           <div className={styles.topUsersCard}>
-            <h2>Top Spender</h2>
+            <h2>Top Spenders</h2>
             <div className={styles.topUsersList}>
               {topUsers.map((user: any, index: number) => (
                 <div key={index} className={styles.topUser}>

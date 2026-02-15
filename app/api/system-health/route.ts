@@ -69,7 +69,7 @@ interface HealthData {
 export async function GET() {
   const startTime = Date.now();
   
-  // Initialize health data with proper types
+  // Initialize health data
   const health: HealthData = {
     overall: true,
     responseTime: 0,
@@ -120,22 +120,18 @@ export async function GET() {
       health.services.database.message = 'Connected';
       health.services.database.latency = Date.now() - dbStart;
       
-      // Get collection stats safely
+      // Get collection stats
       try {
         if (mongoose.connection.db) {
           const collections = await mongoose.connection.db.listCollections().toArray();
-          
-          // Format collection info
           const collectionInfo: CollectionInfo[] = [];
           
           for (const collection of collections) {
-            // Get document count for each collection
             const count = await mongoose.connection.db.collection(collection.name).countDocuments();
-            
             collectionInfo.push({
               name: collection.name,
               count: count,
-              size: 'N/A' // You can add size calculation if needed
+              size: 'N/A'
             });
           }
           
@@ -143,7 +139,7 @@ export async function GET() {
           health.services.database.collections = collectionInfo.length;
         }
       } catch (err) {
-        console.error('Error getting collection stats:', err);
+        // Silent fail for collection stats
       }
       
       // Get storage stats
@@ -154,7 +150,7 @@ export async function GET() {
         health.services.storage.pendingRequests = await Card.countDocuments({ requestStatus: 'pending' });
         health.services.storage.status = true;
       } catch (err) {
-        console.error('Error getting storage stats:', err);
+        // Silent fail for storage stats
       }
     } else {
       health.services.database.message = 'Disconnected';
@@ -174,26 +170,58 @@ export async function GET() {
 
   // Check API Endpoints
   try {
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    
     // Test auth API
     try {
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
       const authRes = await fetch(`${baseUrl}/api/auth/test`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       }).catch(() => null);
-      
       health.services.api.auth = authRes?.ok || false;
     } catch {
       health.services.api.auth = false;
     }
     
-    // For other APIs, check based on database status
-    health.services.api.transactions = health.services.database.status;
-    health.services.api.cards = health.services.database.status;
-    health.services.api.admin = health.services.database.status;
+    // Test Transactions API
+    try {
+      const transactionsRes = await fetch(`${baseUrl}/api/test/transaction`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }).catch(() => null);
+      health.services.api.transactions = transactionsRes?.ok || false;
+    } catch {
+      health.services.api.transactions = false;
+    }
+
+    // Test Cards API
+    try {
+      const cardsRes = await fetch(`${baseUrl}/api/cards/test`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }).catch(() => null);
+      health.services.api.cards = cardsRes?.ok || false;
+    } catch {
+      health.services.api.cards = false;
+    }
+
+    // Test Admin API
+    try {
+      const adminRes = await fetch(`${baseUrl}/api/admin/test`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }).catch(() => null);
+      health.services.api.admin = adminRes?.ok || false;
+    } catch {
+      health.services.api.admin = false;
+    }
     
     // Overall API status
-    health.services.api.status = health.services.api.auth && health.services.database.status;
+    health.services.api.status = 
+      health.services.api.auth && 
+      health.services.api.transactions && 
+      health.services.api.cards && 
+      health.services.api.admin;
     
   } catch (error) {
     health.services.api.status = false;
@@ -204,7 +232,10 @@ export async function GET() {
   }
 
   // Calculate overall status
-  health.overall = health.services.database.status && health.services.api.status;
+  health.overall = 
+    health.services.database.status && 
+    health.services.api.status && 
+    health.services.storage.status;
   health.responseTime = Date.now() - startTime;
 
   return NextResponse.json(health);

@@ -398,3 +398,96 @@
   font-weight: 600;
   margin-top: 0.5rem;
 }
+
+/* Add this with your other form group styles */
+.textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.textarea::placeholder {
+  color: #aaa;
+}
+
+/* Info box styling (already have this, but ensure it's there) */
+.infoBox {
+  background: #e8f5e9;
+  border: 1px solid #2e7d32;
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: #2e7d32;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.infoBox p {
+  margin: 0;
+}
+
+/* Card preview styles (already have these) */
+.cardPreview {
+  margin: 1.5rem 0;
+}
+
+.cardPreview h4 {
+  color: #666;
+  margin-bottom: 0.8rem;
+  font-size: 0.95rem;
+}
+
+.previewCard {
+  background: linear-gradient(135deg, #1a1a1a, #333);
+  border-radius: 15px;
+  padding: 1.5rem;
+  color: white;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.previewChip {
+  width: 40px;
+  height: 30px;
+  background: linear-gradient(135deg, #ffd700, #ffed8c);
+  border-radius: 5px;
+  margin-bottom: 1rem;
+}
+
+.previewNumber {
+  font-family: monospace;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+
+.previewDetails {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.previewType {
+  text-align: right;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}

@@ -91,16 +91,16 @@ export default function RequestCardModal({ isOpen, onClose, phoneNumber, onReque
           </div>
 
           <div className={styles.formGroup}>
-            <label>Reason for Request</label>
-            <textarea
-              value={formData.reason}
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-              required
-              placeholder="Tell us why you need a new card (lost, damaged, upgrade, etc.)"
-              rows={3}
-              className={styles.textarea}
-            />
-          </div>
+  <label>Reason for Request</label>
+  <textarea
+    value={formData.reason}
+    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+    required
+    placeholder="Tell us why you need a new card (lost, damaged, upgrade, etc.)"
+    rows={3}
+    className={styles.textarea}  
+  />
+</div>
 
           <div className={styles.cardPreview}>
             <h4>Card Preview</h4>
